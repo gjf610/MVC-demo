@@ -11356,7 +11356,59 @@ var Model = /*#__PURE__*/function () {
 
 var _default = Model;
 exports.default = _default;
-},{}],"app1.js":[function(require,module,exports) {
+},{}],"base/View.js":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+
+var _jquery = _interopRequireDefault(require("jquery"));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
+
+function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
+
+var View = /*#__PURE__*/function () {
+  function View(options) {
+    var _this = this;
+
+    _classCallCheck(this, View);
+
+    Object.assign(this, options);
+    this.el = (0, _jquery.default)(this.el);
+    this.render(this.data);
+    this.autoBindEvents();
+    this.eventBus.on('m:updated', function () {
+      _this.render(_this.data);
+    });
+  }
+
+  _createClass(View, [{
+    key: "autoBindEvents",
+    value: function autoBindEvents() {
+      // 绑定事件
+      for (var key in this.events) {
+        var value = this[this.events[key]];
+        var spaceIndex = key.indexOf(' ');
+        var action = key.slice(0, spaceIndex);
+        var ids = key.slice(spaceIndex + 1);
+        this.el.on(action, ids, value);
+      }
+    }
+  }]);
+
+  return View;
+}();
+
+var _default = View;
+exports.default = _default;
+},{"jquery":"../node_modules/jquery/dist/jquery.js"}],"app1.js":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -11370,12 +11422,14 @@ require("./app1.css");
 
 var _Model = _interopRequireDefault(require("./base/Model"));
 
+var _View = _interopRequireDefault(require("./base/View"));
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 var eventBus = (0, _jquery.default)({});
 var m = new _Model.default({
   data: {
-    num: parseInt(localStorage.getItem('num')) || 100
+    num: parseFloat(localStorage.getItem('num')) || 100
   },
   update: function update(data) {
     Object.assign(m.data, data);
@@ -11383,64 +11437,49 @@ var m = new _Model.default({
     localStorage.setItem('num', m.data.num);
   }
 });
-console.dir(m);
-var vue = {
-  el: null,
-  html: "\n    <div>\n        <div class=\"output\">\n            <span id=\"number\">{{num}}</span>\n        </div>\n        <div class=\"actions\">\n            <button id=\"add1\">+1</button>\n            <button id=\"minus1\">-1</button>\n            <button id=\"mul2\">\xD72</button>\n            <button id=\"divide2\">\xF72</button>\n        </div>\n    </div>\n    ",
-  init: function init(container) {
-    // 初始化渲染
-    vue.el = (0, _jquery.default)(container);
-    vue.render(m.data.num); // view = render(data)
 
-    vue.autoBindEvents();
-    eventBus.on('m:updated', function () {
-      vue.render(m.data.num);
-    });
-  },
-  render: function render(num) {
-    if (vue.el.children.length !== 0) vue.el.empty();
-    (0, _jquery.default)(vue.html.replace('{{num}}', num)).appendTo(vue.el);
-  },
-  events: {
-    'click #add1': 'add',
-    'click #minus1': 'minus',
-    'click #mul2': 'mul',
-    'click #divide2': 'divide'
-  },
-  add: function add() {
-    m.update({
-      num: m.data.num + 1
-    });
-  },
-  minus: function minus() {
-    m.update({
-      num: m.data.num - 1
-    });
-  },
-  mul: function mul() {
-    m.update({
-      num: m.data.num * 2
-    });
-  },
-  divide: function divide() {
-    m.update({
-      num: m.data.num / 2
-    });
-  },
-  autoBindEvents: function autoBindEvents() {
-    // 绑定事件
-    for (var key in vue.events) {
-      var value = vue[vue.events[key]];
-      var spaceIndex = key.indexOf(' ');
-      var action = key.slice(0, spaceIndex);
-      var ids = key.slice(spaceIndex + 1);
-      vue.el.on(action, ids, value);
+var init = function init(el) {
+  new _View.default({
+    el: el,
+    eventBus: eventBus,
+    data: m.data,
+    html: "\n            <div>\n                <div class=\"output\">\n                    <span id=\"number\">{{num}}</span>\n                </div>\n                <div class=\"actions\">\n                    <button id=\"add1\">+1</button>\n                    <button id=\"minus1\">-1</button>\n                    <button id=\"mul2\">\xD72</button>\n                    <button id=\"divide2\">\xF72</button>\n                </div>\n            </div>\n        ",
+    render: function render(data) {
+      if (this.el.children.length !== 0) this.el.empty();
+      (0, _jquery.default)(this.html.replace('{{num}}', data.num)).appendTo(this.el);
+    },
+    events: {
+      'click #add1': 'add',
+      'click #minus1': 'minus',
+      'click #mul2': 'mul',
+      'click #divide2': 'divide'
+    },
+    add: function add() {
+      m.update({
+        num: m.data.num + 1
+      });
+    },
+    minus: function minus() {
+      m.update({
+        num: m.data.num - 1
+      });
+    },
+    mul: function mul() {
+      m.update({
+        num: m.data.num * 2
+      });
+    },
+    divide: function divide() {
+      m.update({
+        num: m.data.num / 2
+      });
     }
-  }
+  });
 };
-var _default = vue;
+
+var _default = init;
 exports.default = _default;
-},{"jquery":"../node_modules/jquery/dist/jquery.js","./app1.css":"app1.css","./base/Model":"base/Model.js"}],"app2.css":[function(require,module,exports) {
+},{"jquery":"../node_modules/jquery/dist/jquery.js","./app1.css":"app1.css","./base/Model":"base/Model.js","./base/View":"base/View.js"}],"app2.css":[function(require,module,exports) {
 var reloadCSS = require('_css_loader');
 
 module.hot.dispose(reloadCSS);
@@ -11459,6 +11498,8 @@ require("./app2.css");
 
 var _Model = _interopRequireDefault(require("./base/Model"));
 
+var _View = _interopRequireDefault(require("./base/View"));
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 var eventBus = (0, _jquery.default)({});
@@ -11473,48 +11514,34 @@ var m = new _Model.default({
     localStorage.setItem(localKey, m.data.index);
   }
 });
-var vue = {
-  el: null,
-  html: function html(index) {
-    console.log('index', index);
-    return "\n        <div>\n            <ol class=\"tab-bar\">\n                <li class=\"".concat(index === 0 ? 'selected' : '', "\" data-index=\"0\"><span>1111</span></li>\n                <li class=\"").concat(index === 1 ? 'selected' : '', "\" data-index=\"1\"><span>2222</span></li>\n            </ol>\n            <ol class=\"tab-content\">\n                <li class=\"").concat(index === 0 ? 'active' : '', "\">\u5185\u5BB91</li>\n                <li class=\"").concat(index === 1 ? 'active' : '', "\">\u5185\u5BB92</li>\n            </ol>\n        </div>\n        ");
-  },
-  init: function init(container) {
-    // 初始化渲染
-    vue.el = (0, _jquery.default)(container);
-    vue.render(m.data.index);
-    vue.autoBindEvents();
-    eventBus.on('m:updated', function () {
-      vue.render(m.data.index);
-    });
-  },
-  render: function render(index) {
-    if (vue.el.children.length !== 0) vue.el.empty();
-    (0, _jquery.default)(vue.html(index)).appendTo(vue.el);
-  },
-  events: {
-    'click .tab-bar li': 'x'
-  },
-  x: function x(e) {
-    var index = parseInt(e.currentTarget.dataset.index);
-    m.update({
-      index: index
-    });
-  },
-  autoBindEvents: function autoBindEvents() {
-    // 绑定事件
-    for (var key in vue.events) {
-      var value = vue[vue.events[key]];
-      var spaceIndex = key.indexOf(' ');
-      var action = key.slice(0, spaceIndex);
-      var ids = key.slice(spaceIndex + 1);
-      vue.el.on(action, ids, value);
+
+var init = function init(el) {
+  new _View.default({
+    el: el,
+    eventBus: eventBus,
+    data: m.data,
+    html: function html(index) {
+      return "\n            <div>\n                <ol class=\"tab-bar\">\n                    <li class=\"".concat(index === 0 ? 'selected' : '', "\" data-index=\"0\"><span>1111</span></li>\n                    <li class=\"").concat(index === 1 ? 'selected' : '', "\" data-index=\"1\"><span>2222</span></li>\n                </ol>\n                <ol class=\"tab-content\">\n                    <li class=\"").concat(index === 0 ? 'active' : '', "\">\u5185\u5BB91</li>\n                    <li class=\"").concat(index === 1 ? 'active' : '', "\">\u5185\u5BB92</li>\n                </ol>\n            </div>\n            ");
+    },
+    render: function render(data) {
+      if (this.el.children.length !== 0) this.el.empty();
+      (0, _jquery.default)(this.html(data.index)).appendTo(this.el);
+    },
+    events: {
+      'click .tab-bar li': 'x'
+    },
+    x: function x(e) {
+      var index = parseInt(e.currentTarget.dataset.index);
+      m.update({
+        index: index
+      });
     }
-  }
+  });
 };
-var _default = vue;
+
+var _default = init;
 exports.default = _default;
-},{"jquery":"../node_modules/jquery/dist/jquery.js","./app2.css":"app2.css","./base/Model":"base/Model.js"}],"app3.css":[function(require,module,exports) {
+},{"jquery":"../node_modules/jquery/dist/jquery.js","./app2.css":"app2.css","./base/Model":"base/Model.js","./base/View":"base/View.js"}],"app3.css":[function(require,module,exports) {
 var reloadCSS = require('_css_loader');
 
 module.hot.dispose(reloadCSS);
@@ -11582,9 +11609,8 @@ require("./app4.js");
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-_app.default.init('#app1');
-
-_app2.default.init('#app2');
+(0, _app.default)('#app1');
+(0, _app2.default)('#app2');
 },{"./reset.css":"reset.css","./global.css":"global.css","./app1.js":"app1.js","./app2.js":"app2.js","./app3.js":"app3.js","./app4.js":"app4.js"}],"C:/Users/steven/AppData/Roaming/npm/node_modules/parcel-bundler/src/builtins/hmr-runtime.js":[function(require,module,exports) {
 var global = arguments[3];
 var OVERLAY_ID = '__parcel__error__overlay__';
@@ -11613,7 +11639,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "10852" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "12058" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};

@@ -7,5 +7,5 @@ import './app3.js';
 import './app4.js';
 
 
-x.init('#app1')
-y.init('#app2')
+x('#app1')
+y('#app2')

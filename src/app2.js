@@ -1,6 +1,7 @@
 import $ from "jquery";
 import './app2.css';
 import Model from "./base/Model";
+import View from "./base/View";
 
 const eventBus = $({})
 
@@ -16,55 +17,36 @@ const m = new Model({
     },
 })
 
-const vue = {
-    el: null,
-    html: (index) => {
-        console.log('index', index)
-        return `
-        <div>
-            <ol class="tab-bar">
-                <li class="${index === 0 ? 'selected' : ''}" data-index="0"><span>1111</span></li>
-                <li class="${index === 1 ? 'selected' : ''}" data-index="1"><span>2222</span></li>
-            </ol>
-            <ol class="tab-content">
-                <li class="${index === 0 ? 'active' : ''}">内容1</li>
-                <li class="${index === 1 ? 'active' : ''}">内容2</li>
-            </ol>
-        </div>
-        `
-    },
-    init(container) {
-        // 初始化渲染
-        vue.el = $(container);
-        vue.render(m.data.index);
-        vue.autoBindEvents();
-        eventBus.on('m:updated', () => {
-            vue.render(m.data.index)
-        })
-    },
-    render(index) {
-        if (vue.el.children.length !== 0) vue.el.empty()
-        $(vue.html(index)).appendTo(vue.el)
-
-    },
-    events: {
-        'click .tab-bar li': 'x',
-    },
-    x(e) {
-        const index = parseInt(e.currentTarget.dataset.index);
-        m.update({ index })
-    },
-    autoBindEvents() {
-        // 绑定事件
-        for (let key in vue.events) {
-            const value = vue[vue.events[key]]
-            const spaceIndex = key.indexOf(' ')
-            const action = key.slice(0, spaceIndex)
-            const ids = key.slice(spaceIndex + 1)
-            vue.el.on(action, ids, value)
-
-        }
-    }
+const init = (el) => {
+    new View({
+        el,
+        eventBus,
+        data: m.data,
+        html: (index) => {
+            return `
+            <div>
+                <ol class="tab-bar">
+                    <li class="${index === 0 ? 'selected' : ''}" data-index="0"><span>1111</span></li>
+                    <li class="${index === 1 ? 'selected' : ''}" data-index="1"><span>2222</span></li>
+                </ol>
+                <ol class="tab-content">
+                    <li class="${index === 0 ? 'active' : ''}">内容1</li>
+                    <li class="${index === 1 ? 'active' : ''}">内容2</li>
+                </ol>
+            </div>
+            `
+        },
+        render(data) {
+            if (this.el.children.length !== 0) this.el.empty()
+            $(this.html(data.index)).appendTo(this.el)
+        },
+        events: {
+            'click .tab-bar li': 'x',
+        },
+        x(e) {
+            const index = parseInt(e.currentTarget.dataset.index);
+            m.update({ index })
+        },
+    })
 }
-
-export default vue;
+export default init;
