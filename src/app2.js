@@ -1,24 +1,22 @@
 import $ from "jquery";
 import './app2.css';
+import Model from "./base/Model";
 
 const eventBus = $({})
 
 const localKey = 'app2.index';
-const m = {
+const m = new Model({
     data: {
         index: parseInt(localStorage.getItem(localKey)) || 0
-
     },
-    create() { },
-    delete() { },
-    update(data) {
+    update: function (data) {
         Object.assign(m.data, data)
         eventBus.trigger('m:updated')
-        localStorage.setItem('index', m.data.index)
+        localStorage.setItem(localKey, m.data.index)
     },
-    get() { }
-}
-const v = {
+})
+
+const vue = {
     el: null,
     html: (index) => {
         console.log('index', index)
@@ -36,23 +34,18 @@ const v = {
         `
     },
     init(container) {
-        v.el = $(container);
+        // 初始化渲染
+        vue.el = $(container);
+        vue.render(m.data.index);
+        vue.autoBindEvents();
+        eventBus.on('m:updated', () => {
+            vue.render(m.data.index)
+        })
     },
     render(index) {
-        if (v.el.children.length !== 0) v.el.empty()
-        $(v.html(index)).appendTo(v.el)
+        if (vue.el.children.length !== 0) vue.el.empty()
+        $(vue.html(index)).appendTo(vue.el)
 
-    },
-}
-const c = {
-    init(container) {
-        // 初始化渲染
-        v.init(container)
-        v.render(m.data.index); // view = render(data)
-        c.autoBindEvents();
-        eventBus.on('m:updated', () => {
-            v.render(m.data.index)
-        })
     },
     events: {
         'click .tab-bar li': 'x',
@@ -63,15 +56,15 @@ const c = {
     },
     autoBindEvents() {
         // 绑定事件
-        for (let key in c.events) {
-            const value = c[c.events[key]]
+        for (let key in vue.events) {
+            const value = vue[vue.events[key]]
             const spaceIndex = key.indexOf(' ')
             const action = key.slice(0, spaceIndex)
             const ids = key.slice(spaceIndex + 1)
-            v.el.on(action, ids, value)
+            vue.el.on(action, ids, value)
 
         }
     }
 }
 
-export default c;
+export default vue;
