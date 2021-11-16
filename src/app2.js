@@ -1,9 +1,10 @@
 import $ from "jquery";
 import './app2.css';
+import EventsBus from './base/EventBus';
 import Model from "./base/Model";
 import View from "./base/View";
 
-const eventBus = $({})
+const eventBus = new EventsBus()
 
 const localKey = 'app2.index';
 const m = new Model({
@@ -20,7 +21,6 @@ const m = new Model({
 const init = (el) => {
     new View({
         el,
-        eventBus,
         data: m.data,
         html: (index) => {
             return `

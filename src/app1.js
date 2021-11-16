@@ -3,17 +3,13 @@ import './app1.css';
 import Model from './base/Model';
 import View from './base/View';
 
-const eventBus = $({})
-
-
-
 const m = new Model({
     data: {
         num: parseFloat(localStorage.getItem('num')) || 100
     },
     update: function (data) {
         Object.assign(m.data, data)
-        eventBus.trigger('m:updated')
+        m.trigger('m:updated')
         localStorage.setItem('num', m.data.num)
     }
 })
@@ -22,7 +18,6 @@ const m = new Model({
 const init = (el) => {
     new View({
         el,
-        eventBus,
         data: m.data,
         html: `
             <div>
